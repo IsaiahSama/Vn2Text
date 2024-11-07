@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
 
 final fileProvider = StateProvider<File?>((ref) => null);
 final errorProvider = StateProvider<String>((ref) => "");
+final messageProvider = StateProvider<String>((ref) => "");
 
 class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
@@ -39,6 +40,10 @@ class MyHomePage extends ConsumerWidget {
           Text(ref.watch(errorProvider).toString(),
               style: const TextStyle(
                 color: Colors.red,
+              )),
+          Text(ref.watch(messageProvider).toString(),
+              style: const TextStyle(
+                color: Colors.green,
               )),
           Padding(
             padding: const EdgeInsets.all(10),
@@ -68,11 +73,13 @@ class MyHomePage extends ConsumerWidget {
 }
 
 void uploadVoiceNote(WidgetRef ref) async {
+  ref.read(errorProvider.notifier).state = "";
+  ref.read(messageProvider.notifier).state = "";
+  
   print("Upload Voice Note");
 
   // Select a file
   FilePickerResult? result = await FilePickerHelper.pickFile();
-
   // If the file doesn't exist, notify user and return.
   if (result == null) {
     // Display Error message
@@ -86,6 +93,9 @@ void uploadVoiceNote(WidgetRef ref) async {
 
   // Store file in Riverpod!
   ref.read(fileProvider.notifier).state = file;
+
+  // Display Success message
+  ref.read(messageProvider.notifier).state = "File uploaded!";
 }
 
 void transcribe(WidgetRef ref) async {
