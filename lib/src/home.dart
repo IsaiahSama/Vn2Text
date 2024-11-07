@@ -5,13 +5,23 @@ import 'package:dio/dio.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import './providers.dart';
-
+import 'package:go_router/go_router.dart';
 
 class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final String nextPath = ref.watch(nextPathProvider);
+
+    if (nextPath != "") {
+      context.push(nextPath);
+      Future.delayed(
+        const Duration(seconds: 1),
+        () => ref.read(nextPathProvider.notifier).state = "",
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Center(child: Text('Voice Note to Text')),
@@ -57,12 +67,10 @@ class MyHomePage extends ConsumerWidget {
       ),
     );
   }
-  
+
   void uploadVoiceNote(WidgetRef ref) async {
     ref.read(errorProvider.notifier).state = "";
     ref.read(messageProvider.notifier).state = "";
-
-    print("Upload Voice Note");
 
     // Select a file
     FilePickerResult? result = await FilePickerHelper.pickFile();
@@ -85,8 +93,6 @@ class MyHomePage extends ConsumerWidget {
   }
 
   void transcribe(BuildContext context, WidgetRef ref) async {
-    print("Transcribe!");
-
     // Acquire the file from Riverpod
     File? file = ref.read(fileProvider);
 
