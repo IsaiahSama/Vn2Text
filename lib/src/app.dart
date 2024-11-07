@@ -6,19 +6,26 @@ import 'package:voice_note_to_text/src/filepicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:voice_note_to_text/src/transcribe.dart';
+import 'package:go_router/go_router.dart';
+
+final _router = GoRouter(initialLocation: '/', routes: [
+  GoRoute(
+    path: '/',
+    builder: (context, state) => const MyHomePage(),
+  ),
+  GoRoute(
+    path: '/transcribe',
+    builder: (context, state) => const TranscriptionPage(),
+  ),
+]);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Center(child: Text('Voice Note to Text')),
-        ),
-        body: const MyHomePage(),
-      ),
+    return MaterialApp.router(
+      routerConfig: _router,
     );
   }
 }
@@ -26,49 +33,55 @@ class MyApp extends StatelessWidget {
 final fileProvider = StateProvider<File?>((ref) => null);
 final errorProvider = StateProvider<String>((ref) => "");
 final messageProvider = StateProvider<String>((ref) => "");
+final nextPathProvider = StateProvider<String>((ref) => "");
 
 class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: Column(
-        children: [
-          Image.network(
-              "https://th.bing.com/th/id/OIG2.DY4RCeB1fLi1yzfYWYzq?pid=ImgGn",
-              height: 100,
-              width: 100),
-          Text(ref.watch(errorProvider).toString(),
-              style: const TextStyle(
-                color: Colors.red,
-              )),
-          Text(ref.watch(messageProvider).toString(),
-              style: const TextStyle(
-                color: Colors.green,
-              )),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: ElevatedButton(
-              onPressed: () => uploadVoiceNote(ref),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Upload Voice Note"),
-            ),
-          ),
-          Padding(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Center(child: Text('Voice Note to Text')),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            Image.network(
+                "https://th.bing.com/th/id/OIG2.DY4RCeB1fLi1yzfYWYzq?pid=ImgGn",
+                height: 100,
+                width: 100),
+            Text(ref.watch(errorProvider).toString(),
+                style: const TextStyle(
+                  color: Colors.red,
+                )),
+            Text(ref.watch(messageProvider).toString(),
+                style: const TextStyle(
+                  color: Colors.green,
+                )),
+            Padding(
               padding: const EdgeInsets.all(10),
               child: ElevatedButton(
-                onPressed: () => transcribe(ref),
+                onPressed: () => uploadVoiceNote(ref),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text("Transcribe!"),
-              ))
-        ],
+                child: const Text("Upload Voice Note"),
+              ),
+            ),
+            Padding(
+                padding: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                  onPressed: () => transcribe(context, ref),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("Transcribe!"),
+                ))
+          ],
+        ),
       ),
     );
   }
@@ -100,7 +113,7 @@ void uploadVoiceNote(WidgetRef ref) async {
   ref.read(messageProvider.notifier).state = "File uploaded!";
 }
 
-void transcribe(WidgetRef ref) async {
+void transcribe(BuildContext context, WidgetRef ref) async {
   print("Transcribe!");
 
   // Acquire the file from Riverpod
@@ -120,7 +133,7 @@ void transcribe(WidgetRef ref) async {
     "file": await MultipartFile.fromFile(file.path),
   });
 
-  try{
+  try {
     Response response = await client.post(
       url,
       data: formData,
@@ -131,19 +144,20 @@ void transcribe(WidgetRef ref) async {
       ),
     );
 
-  // Check for errors
+    // Check for errors
 
-  var data = response.data;
+    var data = response.data;
 
-  if (response.statusCode != 200 || data["error"] != "") {
-    ref.read(errorProvider.notifier).state = data["error"];
-    return;
-  }
+    if (response.statusCode != 200 || data["error"] != "") {
+      ref.read(errorProvider.notifier).state = data["error"];
+      return;
+    }
 
-  // Store the Transcription to the Riverpod
-  ref.read(transcriptionProvider.notifier).state = data["text"];
+    // Store the Transcription to the Riverpod
+    ref.read(transcriptionProvider.notifier).state = data["text"];
+    ref.read(nextPathProvider.notifier).state = "/transcription";
   } catch (e) {
-  // If there's an error, display it.
+    // If there's an error, display it.
     ref.read(errorProvider.notifier).state = e.toString();
   }
 }
