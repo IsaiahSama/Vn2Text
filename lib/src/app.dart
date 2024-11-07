@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:voice_note_to_text/src/filepicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -75,7 +76,7 @@ class MyHomePage extends ConsumerWidget {
 void uploadVoiceNote(WidgetRef ref) async {
   ref.read(errorProvider.notifier).state = "";
   ref.read(messageProvider.notifier).state = "";
-  
+
   print("Upload Voice Note");
 
   // Select a file
@@ -101,9 +102,38 @@ void uploadVoiceNote(WidgetRef ref) async {
 void transcribe(WidgetRef ref) async {
   print("Transcribe!");
 
+  // Acquire the file from Riverpod
+  File? file = ref.read(fileProvider);
+
+  if (file == null) {
+    ref.read(errorProvider.notifier).state = "No file selected";
+    return;
+  }
+
   // Transcribe the file using my API
 
-  // Display the transcription. Be sure to not store it.
+  const url = "http://localhost:5000/";
+  Dio client = Dio();
 
+  FormData formData = FormData.fromMap({
+    "file": await MultipartFile.fromFile(file.path),
+  });
+
+  try{
+    Response response = await client.post(
+      url,
+      data: formData,
+      options: Options(
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      ),
+    );
+
+  // Store the Transcription to the Riverpod
+  ref.read(messageProvider.notifier).state = response.data;
+  } catch (e) {
   // If there's an error, display it.
+    ref.read(errorProvider.notifier).state = e.toString();
+  }
 }
