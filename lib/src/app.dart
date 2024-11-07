@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:voice_note_to_text/src/filepicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:voice_note_to_text/src/transcribe.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -130,8 +131,17 @@ void transcribe(WidgetRef ref) async {
       ),
     );
 
+  // Check for errors
+
+  var data = response.data;
+
+  if (response.statusCode != 200 || data["error"] != "") {
+    ref.read(errorProvider.notifier).state = data["error"];
+    return;
+  }
+
   // Store the Transcription to the Riverpod
-  ref.read(messageProvider.notifier).state = response.data;
+  ref.read(transcriptionProvider.notifier).state = data["text"];
   } catch (e) {
   // If there's an error, display it.
     ref.read(errorProvider.notifier).state = e.toString();
