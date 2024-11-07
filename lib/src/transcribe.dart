@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import './providers.dart';
 
-final transcriptionProvider = StateProvider<String>((ref) => "");
 
 class TranscriptionPage extends ConsumerWidget {
   const TranscriptionPage({super.key});
