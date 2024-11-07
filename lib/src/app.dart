@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:voice_note_to_text/src/filepicker.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -54,19 +58,25 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-void uploadVoiceNote() {
+
+void uploadVoiceNote() async{
 
   print("Upload Voice Note");
 
   // Select a file
+  FilePickerResult? result = await FilePickerHelper.pickFile();
 
   // If the file doesn't exist, notify user and return.
-
-  // Ensure File is of correct format (audio)
+  if (result == null) {
+    // Display Error message
+    return;
+  }
 
   // Temporarily store the file for transcription.
 
-  // Display any errors if there are any.
+  File file = File(result.files.single.path!);
+  // Store file in Riverpod!
+  
 }
 
 void transcribe() {
