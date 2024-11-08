@@ -33,6 +33,7 @@ class MyHomePage extends ConsumerWidget {
         () {
           ref.read(fileProvider.notifier).state =
               File.fromUri(Uri.parse(files[0].value!));
+          ref.read(sharedFileProvider.notifier).state = [];
           ref.read(errorProvider.notifier).state = "";
           transcribe(context, ref);
         },
