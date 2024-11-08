@@ -27,6 +27,15 @@ class MyHomePage extends ConsumerWidget {
     }
 
     bool isLoading = ref.watch(loadingProvider);
+    final files = ref.watch(sharedFileProvider);
+
+    // This is for if the platform is Android, and we received a file via sharing.
+    if (Platform.isAndroid && files.isNotEmpty) {
+      ref.read(fileProvider.notifier).state = files[0] as File;
+      ref.read(errorProvider.notifier).state = "";
+      ref.read(nextPathProvider.notifier).state = "/transcribe";
+    }
+
 
     return Scaffold(
       appBar: AppBar(
