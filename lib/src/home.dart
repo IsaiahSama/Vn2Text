@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import './providers.dart';
 import 'package:go_router/go_router.dart';
 
+final loadingProvider = StateProvider<bool>((ref) => false);
+
 class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
@@ -21,6 +23,8 @@ class MyHomePage extends ConsumerWidget {
         () => ref.read(nextPathProvider.notifier).state = "",
       );
     }
+
+    bool isLoading = ref.watch(loadingProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -60,7 +64,7 @@ class MyHomePage extends ConsumerWidget {
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text("Transcribe!"),
+                  child: isLoading ? const CircularProgressIndicator() : const Text("Transcribe!"),
                 ))
           ],
         ),
@@ -93,6 +97,11 @@ class MyHomePage extends ConsumerWidget {
   }
 
   void transcribe(BuildContext context, WidgetRef ref) async {
+    if (ref.read(loadingProvider)){
+      ref.read(errorProvider.notifier).state = "Already Transcribing...";
+      return;
+    }
+    
     // Acquire the file from Riverpod
     File? file = ref.read(fileProvider);
 
@@ -101,6 +110,7 @@ class MyHomePage extends ConsumerWidget {
       return;
     }
 
+    ref.read(loadingProvider.notifier).state = true;
     // Transcribe the file using my API
     Client client = ref.read(clientProvider);
 
@@ -114,8 +124,9 @@ class MyHomePage extends ConsumerWidget {
     } else {
       // If there's an error, display it.
       ref.read(errorProvider.notifier).state = state.text;
-      
     }
+
+    ref.read(loadingProvider.notifier).state = false;
 
   }
 }
