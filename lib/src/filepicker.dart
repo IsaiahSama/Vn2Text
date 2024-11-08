@@ -4,7 +4,7 @@ class FilePickerHelper {
   static Future<FilePickerResult?> pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.audio,
-      allowedExtensions: ['opus', 'mpeg', 'mp3'],
+      allowedExtensions: ['opus', 'mpeg', 'mp3', 'ogg'],
     );
     return result;
   }
