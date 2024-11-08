@@ -17,13 +17,10 @@ class MyHomePage extends ConsumerWidget {
     final String nextPath = ref.watch(nextPathProvider);
 
     if (nextPath != "") {
-      Future.delayed(
-        Duration.zero,
-        () {
-          context.go(nextPath);
-          ref.read(nextPathProvider.notifier).state = "";
-        }
-      );
+      Future.delayed(Duration.zero, () {
+        context.go(nextPath);
+        ref.read(nextPathProvider.notifier).state = "";
+      });
     }
 
     bool isLoading = ref.watch(loadingProvider);
@@ -31,11 +28,16 @@ class MyHomePage extends ConsumerWidget {
 
     // This is for if the platform is Android, and we received a file via sharing.
     if (Platform.isAndroid && files.isNotEmpty) {
-      ref.read(fileProvider.notifier).state = files[0] as File;
-      ref.read(errorProvider.notifier).state = "";
-      ref.read(nextPathProvider.notifier).state = "/transcribe";
+      Future.delayed(
+        Duration.zero,
+        () {
+          ref.read(fileProvider.notifier).state =
+              File.fromUri(Uri.parse(files[0].value!));
+          ref.read(errorProvider.notifier).state = "";
+          transcribe(context, ref);
+        },
+      );
     }
-
 
     return Scaffold(
       appBar: AppBar(
@@ -75,7 +77,9 @@ class MyHomePage extends ConsumerWidget {
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
                   ),
-                  child: isLoading ? const CircularProgressIndicator() : const Text("Transcribe!"),
+                  child: isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text("Transcribe!"),
                 ))
           ],
         ),
@@ -110,8 +114,8 @@ class MyHomePage extends ConsumerWidget {
   void transcribe(BuildContext context, WidgetRef ref) async {
     ref.read(errorProvider.notifier).state = "";
     ref.read(messageProvider.notifier).state = "";
-    
-    if (ref.read(loadingProvider)){
+
+    if (ref.read(loadingProvider)) {
       ref.read(errorProvider.notifier).state = "Already Transcribing...";
       return;
     }
@@ -134,13 +138,11 @@ class MyHomePage extends ConsumerWidget {
       // Store the Transcription to the Riverpod
       ref.read(transcriptionProvider.notifier).state = state.text;
       ref.read(nextPathProvider.notifier).state = "/transcribe";
-
     } else {
       // If there's an error, display it.
       ref.read(errorProvider.notifier).state = state.text;
     }
 
     ref.read(loadingProvider.notifier).state = false;
-
   }
 }
