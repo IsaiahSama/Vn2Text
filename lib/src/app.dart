@@ -11,7 +11,7 @@ import './providers.dart';
 import './home.dart';
 
 final _router = GoRouter(
-  initialLocation: '/transcribe',
+  initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',

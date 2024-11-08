@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final clientProvider = StateProvider<Client>((ref) => Client());
 
@@ -13,7 +14,8 @@ class ResponseState {
 class Client {
   // Override / Modify this if need be.
   final Dio client = Dio();
-  final String baseUrl = "http://localhost:5000/";
+  final String url = dotenv.get("TRANSCRIPTION_URL");
+  final String apiKey = dotenv.get("TRANSCRIPTION_API_KEY", fallback: "");
 
   Future<ResponseState> transcribe(File file) async {
     FormData formData = FormData.fromMap({
@@ -22,7 +24,7 @@ class Client {
 
     try {
       Response response = await client.post(
-        "$baseUrl/transcribe/",
+        url,
         data: formData,
         options: Options(
           headers: {
