@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:voice_note_to_text/src/client.dart';
 import 'package:voice_note_to_text/src/filepicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import './providers.dart';
@@ -102,40 +102,20 @@ class MyHomePage extends ConsumerWidget {
     }
 
     // Transcribe the file using my API
+    Client client = ref.read(clientProvider);
 
-    const url = "http://localhost:5000/";
-    Dio client = Dio();
+    ResponseState state = await client.transcribe(file);
 
-    FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromFile(file.path),
-    });
-
-    try {
-      Response response = await client.post(
-        url,
-        data: formData,
-        options: Options(
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        ),
-      );
-
-      // Check for errors
-
-      var data = response.data;
-
-      if (response.statusCode != 200 || data["error"] != "") {
-        ref.read(errorProvider.notifier).state = data["error"];
-        return;
-      }
-
+    if (state.success) {
       // Store the Transcription to the Riverpod
-      ref.read(transcriptionProvider.notifier).state = data["text"];
+      ref.read(transcriptionProvider.notifier).state = state.text;
       ref.read(nextPathProvider.notifier).state = "/transcription";
-    } catch (e) {
+
+    } else {
       // If there's an error, display it.
-      ref.read(errorProvider.notifier).state = e.toString();
+      ref.read(errorProvider.notifier).state = state.text;
+      
     }
+
   }
 }
