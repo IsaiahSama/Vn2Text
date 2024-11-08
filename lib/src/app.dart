@@ -9,10 +9,12 @@ final _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const MyHomePage(),
-    ),
-    GoRoute(
-      path: '/transcribe',
-      builder: (context, state) => const TranscriptionPage(),
+      routes: [
+        GoRoute(
+          path: '/transcribe',
+          builder: (context, state) => const TranscriptionPage(),
+        ),
+      ],
     ),
   ],
 );

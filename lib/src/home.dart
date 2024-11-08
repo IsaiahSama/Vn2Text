@@ -17,10 +17,12 @@ class MyHomePage extends ConsumerWidget {
     final String nextPath = ref.watch(nextPathProvider);
 
     if (nextPath != "") {
-      context.push(nextPath);
       Future.delayed(
-        const Duration(seconds: 1),
-        () => ref.read(nextPathProvider.notifier).state = "",
+        Duration.zero,
+        () {
+          context.go(nextPath);
+          ref.read(nextPathProvider.notifier).state = "";
+        }
       );
     }
 
@@ -97,11 +99,14 @@ class MyHomePage extends ConsumerWidget {
   }
 
   void transcribe(BuildContext context, WidgetRef ref) async {
+    ref.read(errorProvider.notifier).state = "";
+    ref.read(messageProvider.notifier).state = "";
+    
     if (ref.read(loadingProvider)){
       ref.read(errorProvider.notifier).state = "Already Transcribing...";
       return;
     }
-    
+
     // Acquire the file from Riverpod
     File? file = ref.read(fileProvider);
 
@@ -119,7 +124,7 @@ class MyHomePage extends ConsumerWidget {
     if (state.success) {
       // Store the Transcription to the Riverpod
       ref.read(transcriptionProvider.notifier).state = state.text;
-      ref.read(nextPathProvider.notifier).state = "/transcription";
+      ref.read(nextPathProvider.notifier).state = "/transcribe";
 
     } else {
       // If there's an error, display it.

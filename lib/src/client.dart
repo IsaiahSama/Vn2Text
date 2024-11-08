@@ -17,12 +17,12 @@ class Client {
 
   Future<ResponseState> transcribe(File file) async {
     FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromFile(file.path),
+      "audio": await MultipartFile.fromFile(file.path),
     });
 
     try {
       Response response = await client.post(
-        "$baseUrl/transcribe",
+        "$baseUrl/transcribe/",
         data: formData,
         options: Options(
           headers: {
@@ -35,14 +35,18 @@ class Client {
 
       var data = response.data;
 
-      if (response.statusCode != 200 || data["error"] != "") {
-        return ResponseState(success: false, text: data["error"]);
-      }
-
       // Store the Transcription to the Riverpod
 
       return ResponseState(success: true, text: data["text"]);
-    } catch (e) {
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.statusCode != 500) {
+        return ResponseState(success: false, text: e.response!.data["error"]);
+      }
+      
+      if (e.response != null && e.response!.statusCode == 500) {
+        return ResponseState(success: false, text: "An issue occurred with the server for transcriptions.");
+      }
+
       // If there's an error, display it.
       return ResponseState(success: false, text: e.toString());
     }
