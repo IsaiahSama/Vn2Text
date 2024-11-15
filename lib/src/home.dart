@@ -25,6 +25,7 @@ class MyHomePage extends ConsumerWidget {
 
     bool isLoading = ref.watch(loadingProvider);
     final files = ref.watch(sharedFileProvider);
+    ref.watch(localHostURLProvider);
 
     // This is for if the platform is Android, and we received a file via sharing.
     if (Platform.isAndroid && files.isNotEmpty) {
@@ -42,11 +43,19 @@ class MyHomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Voice Note to Text')),
+        title: const Text('Voice Note to Text'),
+        centerTitle: true,
+        leading: InkWell(
+          onTap: () => context.push("/settings"),
+          child: const Icon(
+            Icons.settings,
+          ),
+        ),
       ),
       body: Center(
         child: Column(
           children: [
+            Text("Current URL: ${ref.read(localHostURLProvider)}"),
             Image.network(
                 "https://th.bing.com/th/id/OIG2.DY4RCeB1fLi1yzfYWYzq?pid=ImgGn",
                 height: 100,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_sharing_intent/flutter_sharing_intent.dart';
 import 'package:flutter_sharing_intent/model/sharing_file.dart';
+import 'package:voice_note_to_text/src/settings.dart';
 import 'package:voice_note_to_text/src/transcribe.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,10 @@ final _router = GoRouter(
         GoRoute(
           path: '/transcribe',
           builder: (context, state) => const TranscriptionPage(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsPage(),
         ),
       ],
     ),

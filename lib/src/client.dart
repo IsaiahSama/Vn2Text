@@ -2,8 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:voice_note_to_text/src/providers.dart';
 
-final clientProvider = StateProvider<Client>((ref) => Client());
+final clientProvider = StateProvider<Client>((ref) => Client(url: ref.watch(localHostURLProvider), apiKey: ref.watch(apiKeyProvider)));
 
 class ResponseState {
   ResponseState({required this.success, required this.text});
@@ -13,15 +14,20 @@ class ResponseState {
 
 class Client {
   // Override / Modify this if need be.
+
+  Client({required this.url, required this.apiKey});
+
   final Dio client = Dio();
-  final String url = dotenv.get("TRANSCRIPTION_URL");
-  final String apiKey = dotenv.get("TRANSCRIPTION_API_KEY", fallback: "");
+  final String url;
+  final String apiKey;
 
   Future<ResponseState> transcribe(File file) async {
     FormData formData = FormData.fromMap({
       "audio": await MultipartFile.fromFile(file.path),
     });
 
+    print(url);
+    
     try {
       Response response = await client.post(
         url,
